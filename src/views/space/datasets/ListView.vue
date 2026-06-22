@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import moment from 'moment'
 import type { ValidatedError } from '@arco-design/web-vue'
 import {
@@ -13,6 +13,7 @@ import { useUploadImage } from '@/hooks/use-upload-file'
 
 // 1.定义页面所需数据
 const route = useRoute()
+const router = useRouter()
 const props = defineProps({
   createType: { type: String, required: true },
 })
@@ -62,7 +63,15 @@ const handleUpdate = (dataset_id: string) => {
   })
 }
 
-// 4.定义取消显示模态窗
+// 4.定义进入知识库文档列表处理器
+const openDataset = (dataset_id: string) => {
+  router.push({
+    name: 'space-datasets-documents-list',
+    params: { dataset_id },
+  })
+}
+
+// 5.定义取消显示模态窗
 const handleCancel = () => {
   updateShowUpdateModal(false, async () => {
     // 1.重置整个表单数据
@@ -74,7 +83,7 @@ const handleCancel = () => {
   })
 }
 
-// 5.定义提交模态窗处理器
+// 6.定义提交模态窗处理器
 const handleSubmit = async ({ errors }: { errors: Record<string, ValidatedError> | undefined }) => {
   // 1.如果出错则直接抛出
   if (errors) return
@@ -87,13 +96,13 @@ const handleSubmit = async ({ errors }: { errors: Record<string, ValidatedError>
   await loadDatasets(true)
 }
 
-// 6.监听路由query的变化
+// 7.监听路由query的变化
 watch(
   () => route.query?.search_word,
   (newValue) => loadDatasets(true, String(newValue)),
 )
 
-// 7.页面DOM加载后加载数据
+// 8.页面DOM加载后加载数据
 onMounted(() => {
   loadDatasets(true, search_word.value)
 })
@@ -109,7 +118,7 @@ onMounted(() => {
     <a-row :gutter="[20, 20]" class="flex-1">
       <!-- 有数据的UI状态 -->
       <a-col v-for="dataset in datasets" :key="dataset.id" :span="6">
-        <a-card hoverable class="cursor-pointer rounded-lg">
+        <a-card hoverable class="cursor-pointer rounded-lg" @click="openDataset(dataset.id)">
           <!-- 顶部知识库名称 -->
           <div class="flex items-center gap-3 mb-3">
             <!-- 左侧图标 -->
@@ -123,6 +132,7 @@ onMounted(() => {
                     params: { dataset_id: dataset.id },
                   }"
                   class="text-base text-gray-900 font-bold"
+                  @click.stop
                   >{{ dataset.name }}
                 </router-link>
                 <div class="text-xs text-gray-500 line-clamp-1">
@@ -132,7 +142,7 @@ onMounted(() => {
                 </div>
               </div>
               <!-- 操作按钮 -->
-              <a-dropdown position="br">
+              <a-dropdown position="br" @click.stop>
                 <a-button type="text" size="small" class="rounded-lg !text-gray-700">
                   <template #icon>
                     <icon-more />
