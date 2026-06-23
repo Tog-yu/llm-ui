@@ -31,6 +31,7 @@ export const useUploadFile = () => {
       loading.value = true
       const resp = await uploadFile(file)
       upload_file.value = resp.data
+      return resp.data
     } finally {
       loading.value = false
     }
